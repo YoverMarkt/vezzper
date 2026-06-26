@@ -436,17 +436,23 @@
       </div>
 
       <div style="flex:1 1 380px; min-width:300px;">
-        <form onsubmit="{{ onSubmit }}" style="background:#fff; border:1px solid #E7E2F7; border-radius:24px; padding:clamp(26px,3vw,40px); box-shadow:0 24px 60px -30px rgba(20,16,40,0.4);">
+        <form onsubmit="{{ onSubmit }}" action="https://formsubmit.co/Yoveroses@hotmail.com" method="POST" accept-charset="UTF-8" autocomplete="on" style="background:#fff; border:1px solid #E7E2F7; border-radius:24px; padding:clamp(26px,3vw,40px); box-shadow:0 24px 60px -30px rgba(20,16,40,0.4);">
           <h3 style="font-family:'Sora',sans-serif; font-weight:700; font-size:21px; color:var(--accent,#5B1EF5); margin:0 0 22px;">Solicita tu propuesta</h3>
-          <input placeholder="Nombre" style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:14px; outline:none;">
-          <input placeholder="Correo electrónico" style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:14px; outline:none;">
-          <select style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:14px; outline:none;">
+          <!-- Configuración FormSubmit + protección anti-spam -->
+          <input type="hidden" name="_subject" value="Nueva solicitud desde Vezzper Landing">
+          <input type="hidden" name="_template" value="table">
+          <input type="hidden" name="_captcha" value="false">
+          <input type="hidden" name="_next" value="https://yovermarkt.github.io/vezzper/">
+          <input type="text" name="_honey" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute; left:-9999px; width:1px; height:1px; opacity:0; pointer-events:none;">
+          <input name="nombre" type="text" required="required" minlength="2" maxlength="80" autocomplete="name" placeholder="Nombre" style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:14px; outline:none;">
+          <input name="email" type="email" required="required" maxlength="120" autocomplete="email" placeholder="Correo electrónico" style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:14px; outline:none;">
+          <select name="plan" style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:14px; outline:none;">
             <option>Plan Básico · US$200</option>
             <option>Plan Profesional · US$250</option>
             <option>Plan Empresarial · US$300</option>
             <option>Plan Corporativo · US$400</option>
           </select>
-          <textarea placeholder="Cuéntanos sobre tu empresa" rows="3" style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:18px; outline:none; resize:vertical;"></textarea>
+          <textarea name="mensaje" required="required" minlength="10" maxlength="1000" placeholder="Cuéntanos sobre tu empresa" rows="3" style="width:100%; background:#F6F4FD; border:1px solid #E7E2F7; border-radius:12px; padding:15px 18px; font-size:14.5px; font-family:'Plus Jakarta Sans',sans-serif; color:#15112A; margin-bottom:18px; outline:none; resize:vertical;"></textarea>
           <button type="submit" style="width:100%; background:var(--accent,#5B1EF5); color:#fff; border:none; font-family:'Sora',sans-serif; font-weight:600; font-size:15.5px; padding:16px; border-radius:999px; cursor:pointer; box-shadow:0 12px 26px rgba(91,30,245,0.3);">{{ ctaLabel }}</button>
           <sc-if value="{{ sent }}" hint-placeholder-val="{{ false }}">
             <div style="margin-top:14px; text-align:center; font-size:13.5px; color:var(--accent,#5B1EF5); font-weight:600;">¡Gracias! Te contactaremos pronto.</div>
@@ -483,7 +489,7 @@
 </x-dc>
 <script type="text/x-dc" data-dc-script="" data-props="{&quot;$preview&quot;:{&quot;width&quot;:1200,&quot;height&quot;:900},&quot;accentTone&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Violeta&quot;,&quot;Índigo&quot;,&quot;Lavanda&quot;],&quot;default&quot;:&quot;Violeta&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
 class Component extends DCLogic {
-  state = { sent: false };
+  state = { sent: false, sending: false };
   renderVals() {
     const hp = this.props.pricingHighlight ?? 'Empresarial';
     const tone = this.props.accentTone ?? 'Violeta';
@@ -495,8 +501,26 @@ class Component extends DCLogic {
       hiEmpresarial: hp === 'Empresarial',
       hiCorporativo: hp === 'Corporativo',
       sent: this.state.sent,
-      ctaLabel: this.state.sent ? 'Enviado ✓' : 'Enviar solicitud',
-      onSubmit: (e) => { e.preventDefault(); this.setState({ sent: true }); },
+      ctaLabel: this.state.sent ? 'Enviado ✓' : (this.state.sending ? 'Enviando…' : 'Enviar solicitud'),
+      onSubmit: (e) => {
+        e.preventDefault();
+        const form = e.target;
+        if (this.state.sending) return;
+        // Honeypot: si un bot rellenó el campo oculto, abortamos en silencio.
+        if (form.querySelector('[name="_honey"]') && form.querySelector('[name="_honey"]').value) return;
+        this.setState({ sending: true });
+        fetch('https://formsubmit.co/ajax/Yoveroses@hotmail.com', {
+          method: 'POST',
+          headers: { 'Accept': 'application/json' },
+          body: new FormData(form),
+        })
+          .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(() => { this.setState({ sent: true, sending: false }); form.reset(); })
+          .catch(() => {
+            this.setState({ sending: false });
+            alert('No pudimos enviar tu solicitud. Por favor escríbenos directamente a Yoveroses@hotmail.com');
+          });
+      },
     };
   }
 }
