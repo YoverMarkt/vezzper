@@ -293,3 +293,65 @@ body{margin:0;background:#ffffff;}
 @keyframes vzRise{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:none;}}
 a{text-decoration:none;color:inherit;}
 ::selection{background:#5B1EF5;color:#fff;}
+
+/* ============================================================
+   RESPONSIVE: menú móvil del header + footer apilado
+   ============================================================ */
+
+/* El botón hamburguesa solo aparece en pantallas pequeñas */
+#nav-toggle { display: none; }
+
+@media (max-width: 860px) {
+  #nav-toggle { display: inline-flex !important; }
+
+  /* El nav se convierte en un panel desplegable bajo el header */
+  #nav-main {
+    position: absolute !important;
+    top: 100% !important;
+    left: 0 !important;
+    right: 0 !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 0 !important;
+    background: #FBF7F0;
+    border-top: 1px solid #ECE3D4;
+    box-shadow: 0 16px 32px -18px rgba(20, 16, 40, 0.4);
+    padding: 6px 0 10px;
+    display: none !important;
+    z-index: 60;
+  }
+  #site-header.nav-open #nav-main { display: flex !important; }
+
+  #nav-main a {
+    padding: 14px clamp(20px, 5vw, 44px);
+    font-size: 13px;
+    border-bottom: 1px solid #F1E9DB;
+  }
+  #nav-main a:last-child { border-bottom: 0; }
+}
+
+/* En móviles estrechos ocultamos el botón "Empezar" para dar aire */
+@media (max-width: 520px) {
+  #header-cta { display: none !important; }
+}
+
+/* Footer: todo apilado y centrado en móvil */
+@media (max-width: 720px) {
+  #footer-top {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 22px !important;
+  }
+  #footer-nav {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 14px !important;
+  }
+  #footer-bottom {
+    flex-direction: column !important;
+    align-items: center !important;
+    text-align: center !important;
+    gap: 10px !important;
+  }
+}
